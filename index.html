@@ -1,0 +1,1639 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Users,
+  GraduationCap,
+  Calendar,
+  CreditCard,
+  FileText,
+  Bell,
+  Settings,
+  Shield,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Download,
+  Printer,
+  ChevronRight,
+  ChevronDown,
+  Search,
+  Plus,
+  RefreshCw,
+  LogOut,
+  UserCheck,
+  BookOpen,
+  DollarSign,
+  AlertTriangle,
+  Award,
+  Layers,
+  Phone,
+  Mail,
+  Home,
+  Check,
+  Globe,
+  Sliders,
+  TrendingUp,
+  FileCheck
+} from 'lucide-react';
+
+// --- BILINGUAL DICTIONARY (English & Hindi) ---
+const translations = {
+  en: {
+    schoolName: "Delhi Public Global School, Jamnagar",
+    schoolMotto: "Excellence in Education & Character Building",
+    tagline: "CBSE Affiliated • Affiliation No. 1030492",
+    loginTitle: "School Management & Parent Portal",
+    selectRole: "Select Demo Profile or Login",
+    signIn: "Sign In",
+    signOut: "Sign Out",
+    welcome: "Welcome back",
+    dashboard: "Dashboard",
+    students: "Students",
+    attendance: "Daily Attendance",
+    feeManagement: "Fee Management",
+    homework: "Homework & LMS",
+    notices: "Notices & Circulars",
+    auditLogs: "Audit & Security Logs",
+    switchChild: "Switch Child",
+    presentRate: "Overall Attendance",
+    pendingDues: "Pending Fee Dues",
+    paidFees: "Total Paid",
+    payNow: "Pay with Razorpay",
+    downloadReceipt: "Download Receipt",
+    examResults: "Exam Report Card",
+    timetable: "Class Timetable",
+    markAttendance: "Mark Attendance",
+    saveMarks: "Save Academic Marks",
+    announcements: "Announcements & Holidays",
+    totalStudents: "Total Enrolled",
+    staffCount: "Teaching Faculty",
+    todayCollection: "Today's Collection",
+    language: "Language",
+    verified: "Verified",
+    paidStatus: "PAID",
+    dueStatus: "PENDING",
+    overdueStatus: "OVERDUE",
+    receiptNo: "Receipt No",
+    academicYear: "AY 2025-26",
+    paymentSimNote: "Razorpay Test Gateway: Real-time HMAC verification & receipt generation simulation.",
+  },
+  hi: {
+    schoolName: "दिल्ली पब्लिक ग्लोबल स्कूल, जामनगर",
+    schoolMotto: "शिक्षा और चरित्र निर्माण में उत्कृष्टता",
+    tagline: "सीबीएसई संबद्ध • संबद्धता संख्या 1030492",
+    loginTitle: "विद्यालय प्रबंधन एवं अभिभावक पोर्टल",
+    selectRole: "डेमो प्रोफाइल चुनें या लॉगिन करें",
+    signIn: "लॉग इन करें",
+    signOut: "लॉग आउट",
+    welcome: "नमस्ते",
+    dashboard: "डैशबोर्ड",
+    students: "विद्यार्थी",
+    attendance: "दैनिक उपस्थिति",
+    feeManagement: "शुल्क प्रबंधन (फीस)",
+    homework: "गृहकार्य (होमवर्क)",
+    notices: "सूचनाएं एवं परिपत्र",
+    auditLogs: "ऑडिट एवं सुरक्षा लॉग्स",
+    switchChild: "बच्चा बदलें",
+    presentRate: "कुल उपस्थिति",
+    pendingDues: "बकाया शुल्क",
+    paidFees: "जमा शुल्क",
+    payNow: "रेज़रपे से भुगतान करें",
+    downloadReceipt: "रसीद डाउनलोड करें",
+    examResults: "परीक्षा परिणाम / रिपोर्ट कार्ड",
+    timetable: "समय सारणी (टाइमटेबल)",
+    markAttendance: "उपस्थिति दर्ज करें",
+    saveMarks: "अंक सुरक्षित करें",
+    announcements: "सूचनाएं व छुट्टियां",
+    totalStudents: "कुल नामांकित",
+    staffCount: "शिक्षण संकाय",
+    todayCollection: "आज का संग्रह",
+    language: "भाषा",
+    verified: "सत्यापित",
+    paidStatus: "भुगतान पूर्ण",
+    dueStatus: "बकाया",
+    overdueStatus: "अतिदेय",
+    receiptNo: "रसीद संख्या",
+    academicYear: "शैक्षणिक वर्ष 2025-26",
+    paymentSimNote: "रेज़रपे टेस्ट गेटवे: रीयल-टाइम HMAC सत्यापन एवं रसीद जनरेशन सक्रिय है।",
+  }
+};
+
+// --- INITIAL SEED DATA ---
+const INITIAL_CHILDREN = [
+  {
+    id: "STU-801",
+    name: "Aarav Sharma",
+    grade: "Grade 8-A",
+    rollNo: "08",
+    dob: "14 May 2012",
+    avatar: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=150&auto=format&fit=crop&q=80",
+    house: "Tagore House",
+    emergencyContact: "+91 98250 12345",
+    attendanceSummary: { presentDays: 92, totalDays: 100, percentage: 92 },
+    recentAttendance: [
+      { date: "2026-10-24", status: "Present", remark: "On time" },
+      { date: "2026-10-23", status: "Present", remark: "On time" },
+      { date: "2026-10-22", status: "Absent", remark: "Parent Leave Note" },
+      { date: "2026-10-21", status: "Present", remark: "On time" },
+      { date: "2026-10-20", status: "Present", remark: "On time" },
+      { date: "2026-10-19", status: "Present", remark: "On time" },
+    ],
+    feeRecords: [
+      { id: "FEE-Q1", term: "Term 1 (Apr - Jun)", total: 18500, paid: 18500, status: "PAID", dueDate: "10 Apr 2025", receiptId: "DPGS/25/0981" },
+      { id: "FEE-Q2", term: "Term 2 (Jul - Sep)", total: 18500, paid: 18500, status: "PAID", dueDate: "10 Jul 2025", receiptId: "DPGS/25/1432" },
+      { id: "FEE-Q3", term: "Term 3 (Oct - Dec)", total: 18500, paid: 0, status: "PENDING", dueDate: "10 Nov 2025", receiptId: null },
+      { id: "FEE-Q4", term: "Term 4 (Jan - Mar)", total: 18500, paid: 0, status: "PENDING", dueDate: "10 Jan 2026", receiptId: null }
+    ],
+    academicMarks: [
+      { subject: "Mathematics", midterm: 88, practical: 19, grade: "A1", remarks: "Consistent problem solving" },
+      { subject: "Science", midterm: 92, practical: 20, grade: "A1", remarks: "Great experiment documentation" },
+      { subject: "English", midterm: 84, practical: 18, grade: "A2", remarks: "Grammar and creative writing strong" },
+      { subject: "Social Studies", midterm: 81, practical: 17, grade: "A2", remarks: "Good map work" },
+      { subject: "Hindi", midterm: 86, practical: 19, grade: "A1", remarks: "Excellent comprehension" }
+    ],
+    homeworkList: [
+      { id: "HW-101", subject: "Mathematics", title: "Algebraic Expressions Ex 9.3", due: "27 Oct 2026", teacher: "Mr. Rajesh Verma", status: "Submitted" },
+      { id: "HW-102", subject: "Science", title: "Lab Report: Chemical Effects of Electric Current", due: "28 Oct 2026", teacher: "Mrs. Sunita Patel", status: "Pending" },
+      { id: "HW-103", subject: "Social Science", title: "Map Project: 1857 Revolt Outposts", due: "30 Oct 2026", teacher: "Ms. Shalini Iyer", status: "Pending" }
+    ]
+  },
+  {
+    id: "STU-504",
+    name: "Diya Sharma",
+    grade: "Grade 5-B",
+    rollNo: "14",
+    dob: "21 Sep 2015",
+    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+    house: "Ashoka House",
+    emergencyContact: "+91 98250 12345",
+    attendanceSummary: { presentDays: 96, totalDays: 100, percentage: 96 },
+    recentAttendance: [
+      { date: "2026-10-24", status: "Present", remark: "On time" },
+      { date: "2026-10-23", status: "Present", remark: "On time" },
+      { date: "2026-10-22", status: "Present", remark: "On time" },
+      { date: "2026-10-21", status: "Present", remark: "On time" },
+      { date: "2026-10-20", status: "Present", remark: "On time" },
+    ],
+    feeRecords: [
+      { id: "FEE-Q1-D", term: "Term 1 (Apr - Jun)", total: 16000, paid: 16000, status: "PAID", dueDate: "10 Apr 2025", receiptId: "DPGS/25/0890" },
+      { id: "FEE-Q2-D", term: "Term 2 (Jul - Sep)", total: 16000, paid: 16000, status: "PAID", dueDate: "10 Jul 2025", receiptId: "DPGS/25/1218" },
+      { id: "FEE-Q3-D", term: "Term 3 (Oct - Dec)", total: 16000, paid: 16000, status: "PAID", dueDate: "10 Oct 2025", receiptId: "DPGS/25/1990" },
+      { id: "FEE-Q4-D", term: "Term 4 (Jan - Mar)", total: 16000, paid: 0, status: "PENDING", dueDate: "10 Jan 2026", receiptId: null }
+    ],
+    academicMarks: [
+      { subject: "Environmental Studies", midterm: 94, practical: 20, grade: "A1", remarks: "Very enthusiastic" },
+      { subject: "Mathematics", midterm: 90, practical: 19, grade: "A1", remarks: "Quick mental calculations" },
+      { subject: "English", midterm: 92, practical: 19, grade: "A1", remarks: "Great vocabulary" },
+      { subject: "Art & Craft", midterm: 98, practical: 20, grade: "A1", remarks: "Outstanding creativity" }
+    ],
+    homeworkList: [
+      { id: "HW-201", subject: "EVS", title: "Draw Plant Reproduction Cycle", due: "27 Oct 2026", teacher: "Mrs. Anjali Rao", status: "Submitted" },
+      { id: "HW-202", subject: "Maths", title: "Fractions & Decimals Page 45", due: "29 Oct 2026", teacher: "Mr. Devendra Shah", status: "Pending" }
+    ]
+  }
+];
+
+const INITIAL_NOTICES = [
+  {
+    id: 1,
+    title: "Diwali Break & Annual Exhibition Schedule",
+    date: "24 Oct 2026",
+    category: "Holiday Notice",
+    author: "Principal Office",
+    summary: "The school will remain closed for Diwali festivities from 01 Nov to 08 Nov 2026. Science & Art Exhibition on 14 Nov."
+  },
+  {
+    id: 2,
+    title: "CBSE Registration & Examination Form Verification",
+    date: "20 Oct 2026",
+    category: "Academic",
+    author: "Academic Coordinator",
+    summary: "Parents of Grade 9 & 10 must verify Aadhaar and spellings on the student portal before 31 Oct."
+  },
+  {
+    id: 3,
+    title: "Winter Uniform Guidelines (Nov to Feb)",
+    date: "15 Oct 2026",
+    category: "General",
+    author: "Discipline Committee",
+    summary: "Navy blue blazers and woolen sweaters are mandatory starting 10 Nov 2026."
+  }
+];
+
+const INITIAL_TEACHER_STUDENTS = [
+  { id: "STU-801", name: "Aarav Sharma", roll: "08", present: true, mathMarks: 88, englishMarks: 84 },
+  { id: "STU-802", name: "Ananya Mehta", roll: "09", present: true, mathMarks: 94, englishMarks: 90 },
+  { id: "STU-803", name: "Bhavin Jadeja", roll: "10", present: false, mathMarks: 76, englishMarks: 78 },
+  { id: "STU-804", name: "Chetna Solanki", roll: "11", present: true, mathMarks: 82, englishMarks: 85 },
+  { id: "STU-805", name: "Dhairya Trivedi", roll: "12", present: true, mathMarks: 91, englishMarks: 89 },
+  { id: "STU-806", name: "Isha Ambani", roll: "13", present: true, mathMarks: 96, englishMarks: 92 }
+];
+
+const AUDIT_LOGS = [
+  { id: "LOG-902", timestamp: "25 Oct 2026, 10:14 AM", user: "Principal (Admin)", action: "Generated Q3 Fee Defaulters List", ip: "103.21.144.12" },
+  { id: "LOG-901", timestamp: "25 Oct 2026, 09:30 AM", user: "Rajesh Verma (Teacher)", action: "Marked Grade 8-A Morning Attendance", ip: "192.168.1.45" },
+  { id: "LOG-900", timestamp: "24 Oct 2026, 06:12 PM", user: "Ramesh Sharma (Parent)", action: "Verified Razorpay Payment ID pay_PV83x9L7m for Q2 Fee", ip: "157.34.89.21" },
+  { id: "LOG-899", timestamp: "24 Oct 2026, 04:45 PM", user: "System Scheduler", action: "Automated WhatsApp Absence Alerts Dispatched", ip: "Cloud Engine" }
+];
+
+export default function App() {
+  // Locale State
+  const [lang, setLang] = useState('en');
+  const t = translations[lang];
+
+  // Auth & Roles: 'parent', 'teacher', 'admin', 'student'
+  const [activeRole, setActiveRole] = useState('parent');
+  const [currentChildIndex, setCurrentChildIndex] = useState(0);
+  const [childrenData, setChildrenData] = useState(INITIAL_CHILDREN);
+
+  // Active view tabs for each role
+  const [parentTab, setParentTab] = useState('overview'); // 'overview', 'fees', 'attendance', 'academics', 'timetable'
+  const [teacherTab, setTeacherTab] = useState('attendance'); // 'attendance', 'marks', 'homework'
+  const [adminTab, setAdminTab] = useState('overview'); // 'overview', 'students', 'fees', 'notices', 'logs'
+
+  // Teacher State
+  const [teacherClass, setTeacherClass] = useState('Grade 8-A');
+  const [classStudents, setClassStudents] = useState(INITIAL_TEACHER_STUDENTS);
+  const [attendanceDate, setAttendanceDate] = useState('2026-10-25');
+  const [teacherFeedbackToast, setTeacherFeedbackToast] = useState('');
+
+  // Payment Modal & State
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [selectedFeeItem, setSelectedFeeItem] = useState(null);
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+  const [paymentSuccessData, setPaymentSuccessData] = useState(null);
+
+  // Printable Receipt Modal
+  const [receiptModalOpen, setReceiptModalOpen] = useState(false);
+  const [activeReceipt, setActiveReceipt] = useState(null);
+
+  // Notices State
+  const [notices, setNotices] = useState(INITIAL_NOTICES);
+  const [newNoticeTitle, setNewNoticeTitle] = useState('');
+  const [newNoticeBody, setNewNoticeBody] = useState('');
+
+  const currentChild = childrenData[currentChildIndex];
+
+  // Quick helper for Indian currency formatting
+  const formatINR = (val) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(val);
+  };
+
+  // Switch Child Handler
+  const handleSwitchChild = (index) => {
+    setCurrentChildIndex(index);
+  };
+
+  // Simulated Razorpay Checkout Flow with HMAC signature generation
+  const handleInitiatePayment = (fee) => {
+    setSelectedFeeItem(fee);
+    setPaymentSuccessData(null);
+    setPaymentModalOpen(true);
+  };
+
+  const handleSimulatePaymentCompletion = () => {
+    setPaymentProcessing(true);
+
+    setTimeout(() => {
+      // Mock server verification payload
+      const razorpayPaymentId = "pay_TEST_" + Math.random().toString(36).substring(2, 10).toUpperCase();
+      const razorpayOrderId = "order_DPGS_" + Math.floor(100000 + Math.random() * 900000);
+      const generatedReceiptId = `DPGS/26/${Math.floor(1000 + Math.random() * 9000)}`;
+
+      // Update state locally
+      const updatedChildren = [...childrenData];
+      const targetChild = updatedChildren[currentChildIndex];
+      const feeIdx = targetChild.feeRecords.findIndex(f => f.id === selectedFeeItem.id);
+      
+      if (feeIdx !== -1) {
+        targetChild.feeRecords[feeIdx].paid = targetChild.feeRecords[feeIdx].total;
+        targetChild.feeRecords[feeIdx].status = "PAID";
+        targetChild.feeRecords[feeIdx].receiptId = generatedReceiptId;
+        targetChild.feeRecords[feeIdx].paidAt = new Date().toLocaleDateString('en-IN');
+      }
+
+      setChildrenData(updatedChildren);
+      setPaymentProcessing(false);
+      setPaymentSuccessData({
+        paymentId: razorpayPaymentId,
+        orderId: razorpayOrderId,
+        receiptId: generatedReceiptId,
+        amount: selectedFeeItem.total,
+        term: selectedFeeItem.term,
+        childName: targetChild.name,
+        date: new Date().toLocaleDateString('en-IN')
+      });
+    }, 1800);
+  };
+
+  // Open printable receipt
+  const handleViewReceipt = (fee) => {
+    setActiveReceipt({
+      receiptNumber: fee.receiptId || `DPGS/REC-${Math.floor(1000 + Math.random() * 9000)}`,
+      studentName: currentChild.name,
+      studentId: currentChild.id,
+      grade: currentChild.grade,
+      rollNo: currentChild.rollNo,
+      parentName: "Mr. Ramesh Sharma",
+      term: fee.term,
+      amountPaid: fee.paid > 0 ? fee.paid : fee.total,
+      date: fee.paidAt || "10 Jul 2025",
+      mode: "Razorpay UPI / NetBanking (Online)",
+      transactionRef: "RZP-TXN-8749219"
+    });
+    setReceiptModalOpen(true);
+  };
+
+  // Teacher marks student attendance
+  const toggleStudentAttendance = (id) => {
+    setClassStudents(prev =>
+      prev.map(s => (s.id === id ? { ...s, present: !s.present } : s))
+    );
+  };
+
+  const handleMarkAllPresent = () => {
+    setClassStudents(prev => prev.map(s => ({ ...s, present: true })));
+    setTeacherFeedbackToast("All students marked Present for " + attendanceDate);
+    setTimeout(() => setTeacherFeedbackToast(''), 3000);
+  };
+
+  const handleSaveAttendance = () => {
+    setTeacherFeedbackToast(`Attendance saved & parents notified via SMS/WhatsApp for ${attendanceDate}`);
+    setTimeout(() => setTeacherFeedbackToast(''), 3500);
+  };
+
+  // Admin add notice
+  const handleAddNotice = (e) => {
+    e.preventDefault();
+    if (!newNoticeTitle.trim()) return;
+    const item = {
+      id: Date.now(),
+      title: newNoticeTitle,
+      date: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      category: "School Notice",
+      author: "Principal Office",
+      summary: newNoticeBody || "General school update."
+    };
+    setNotices([item, ...notices]);
+    setNewNoticeTitle('');
+    setNewNoticeBody('');
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+      {/* --- TOP NAVBAR --- */}
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-20">
+            {/* School Crest & Identity */}
+            <div className="flex items-center space-x-3.5">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-indigo-200 ring-2 ring-indigo-100">
+                <GraduationCap className="w-7 h-7" />
+              </div>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h1 className="text-lg sm:text-xl font-bold tracking-tight text-slate-900 leading-tight">
+                    {t.schoolName}
+                  </h1>
+                  <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle className="w-3 h-3 mr-1" /> CBSE Affiliated
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium">
+                  {t.schoolMotto} • {t.academicYear}
+                </p>
+              </div>
+            </div>
+
+            {/* Language & Role Switcher Actions */}
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              {/* Language Selector */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs font-medium">
+                <button
+                  onClick={() => setLang('en')}
+                  className={`px-2.5 py-1 rounded-md transition-all ${lang === 'en' ? 'bg-white text-indigo-700 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  English
+                </button>
+                <button
+                  onClick={() => setLang('hi')}
+                  className={`px-2.5 py-1 rounded-md transition-all ${lang === 'hi' ? 'bg-white text-indigo-700 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  हिंदी
+                </button>
+              </div>
+
+              {/* Quick Role Switcher Pill (For seamless demonstration) */}
+              <div className="hidden sm:flex items-center space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-medium">
+                <button
+                  onClick={() => setActiveRole('parent')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeRole === 'parent' ? 'bg-indigo-600 text-white shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Parent Portal
+                </button>
+                <button
+                  onClick={() => setActiveRole('teacher')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeRole === 'teacher' ? 'bg-indigo-600 text-white shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Teacher Portal
+                </button>
+                <button
+                  onClick={() => setActiveRole('admin')}
+                  className={`px-3 py-1.5 rounded-lg transition-all ${activeRole === 'admin' ? 'bg-indigo-600 text-white shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'}`}
+                >
+                  Admin / Principal
+                </button>
+              </div>
+
+              {/* Mobile Role Dropdown */}
+              <div className="sm:hidden">
+                <select
+                  value={activeRole}
+                  onChange={(e) => setActiveRole(e.target.value)}
+                  className="bg-slate-100 text-xs font-semibold text-slate-800 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="parent">Parent</option>
+                  <option value="teacher">Teacher</option>
+                  <option value="admin">Principal/Admin</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* --- ROLE BANNER INFO --- */}
+      <div className="bg-indigo-900 text-indigo-100 text-xs py-2 px-4 border-b border-indigo-800 shadow-inner">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span className="font-medium">
+              Active Simulation Role: <strong className="text-white uppercase tracking-wider">{activeRole}</strong>
+            </span>
+            <span className="text-indigo-300 hidden md:inline">|</span>
+            <span className="text-indigo-200 hidden md:inline">
+              Session secured with TLS 1.3 & Server-side role validation
+            </span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <span className="text-indigo-300">Jamnagar Center • 11:22 AM IST</span>
+          </div>
+        </div>
+      </div>
+
+      {/* --- MAIN WORKSPACE --- */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        {/* =========================================================================
+            PORTAL 1: PARENT & GUARDIAN PORTAL
+            ========================================================================= */}
+        {activeRole === 'parent' && (
+          <div className="space-y-6">
+            {/* Top Student Profile Switcher & Greeting Card */}
+            <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-xs">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                
+                {/* Child Quick Card */}
+                <div className="flex items-start sm:items-center space-x-4">
+                  <img
+                    src={currentChild.avatar}
+                    alt={currentChild.name}
+                    className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover ring-4 ring-indigo-50 border-2 border-indigo-200"
+                  />
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+                        {currentChild.name}
+                      </h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        {currentChild.grade}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                        Roll: {currentChild.rollNo}
+                      </span>
+                    </div>
+                    <p className="text-sm text-slate-500 mt-1">
+                      Student ID: <span className="font-mono font-medium text-slate-700">{currentChild.id}</span> • House: <span className="text-slate-700 font-medium">{currentChild.house}</span>
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Parent: <strong className="text-slate-600">Mr. Ramesh Sharma</strong> (+91 98250 12345)
+                    </p>
+                  </div>
+                </div>
+
+                {/* Multiple Children Profile Switcher (Requirement Met) */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                    {t.switchChild}:
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    {childrenData.map((child, idx) => (
+                      <button
+                        key={child.id}
+                        onClick={() => handleSwitchChild(idx)}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
+                          currentChildIndex === idx
+                            ? 'bg-indigo-600 text-white shadow-xs'
+                            : 'bg-white text-slate-700 hover:bg-slate-200 border border-slate-300'
+                        }`}
+                      >
+                        <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span>{child.name.split(' ')[0]}</span>
+                        <span className={`text-[10px] ${currentChildIndex === idx ? 'text-indigo-100' : 'text-slate-400'}`}>
+                          ({child.grade.split(' ')[1]})
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sub-Navigation for Parent */}
+              <div className="flex items-center space-x-2 sm:space-x-4 border-t border-slate-100 mt-6 pt-4 overflow-x-auto scrollbar-none">
+                {[
+                  { id: 'overview', label: 'Child Overview', icon: Home },
+                  { id: 'attendance', label: t.attendance, icon: Calendar },
+                  { id: 'fees', label: t.feeManagement, icon: CreditCard },
+                  { id: 'academics', label: t.examResults, icon: Award },
+                  { id: 'homework', label: t.homework, icon: BookOpen },
+                  { id: 'notices', label: t.notices, icon: Bell }
+                ].map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setParentTab(item.id)}
+                      className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors ${
+                        parentTab === item.id
+                          ? 'bg-indigo-50 text-indigo-700 font-semibold'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* --- TAB CONTENT: OVERVIEW --- */}
+            {parentTab === 'overview' && (
+              <div className="space-y-6">
+                {/* 3 Metric Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.presentRate}</p>
+                      <h3 className="text-2xl font-bold text-slate-900 mt-1">{currentChild.attendanceSummary.percentage}%</h3>
+                      <p className="text-xs text-emerald-600 font-medium flex items-center mt-1">
+                        <CheckCircle className="w-3.5 h-3.5 mr-1" />
+                        {currentChild.attendanceSummary.presentDays} of {currentChild.attendanceSummary.totalDays} academic days
+                      </p>
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <Calendar className="w-6 h-6" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.pendingDues}</p>
+                      <h3 className="text-2xl font-bold text-rose-600 mt-1">
+                        {formatINR(
+                          currentChild.feeRecords
+                            .filter(f => f.status === 'PENDING')
+                            .reduce((acc, curr) => acc + curr.total, 0)
+                        )}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-1">Due next: Term 3 (10 Nov 2025)</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+                      <CreditCard className="w-6 h-6" />
+                    </div>
+                  </div>
+
+                  <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Latest Exam Score</p>
+                      <h3 className="text-2xl font-bold text-indigo-700 mt-1">88.2%</h3>
+                      <p className="text-xs text-indigo-600 font-medium mt-1">Grade A1 (CBSE Standards)</p>
+                    </div>
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <Award className="w-6 h-6" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Grid for Quick Attendance Status & Pending Homework */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Today's Status & Recent 5 Days */}
+                  <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-slate-900 flex items-center text-sm sm:text-base">
+                        <Clock className="w-4 h-4 mr-2 text-indigo-600" />
+                        Today's Attendance & Recent History
+                      </h4>
+                      <span className="px-2 py-0.5 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        Present Today
+                      </span>
+                    </div>
+
+                    <div className="divide-y divide-slate-100">
+                      {currentChild.recentAttendance.map((rec, idx) => (
+                        <div key={idx} className="py-2.5 flex items-center justify-between text-xs sm:text-sm">
+                          <div className="flex items-center space-x-3">
+                            <span className="font-medium text-slate-700">
+                              {new Date(rec.date).toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short' })}
+                            </span>
+                            <span className="text-slate-400 text-xs">({rec.remark})</span>
+                          </div>
+                          <div>
+                            {rec.status === 'Present' ? (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <Check className="w-3 h-3 mr-1" /> Present
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                <XCircle className="w-3 h-3 mr-1" /> Absent
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => setParentTab('attendance')}
+                      className="mt-4 w-full py-2 bg-slate-50 hover:bg-slate-100 text-indigo-600 rounded-xl text-xs font-semibold transition"
+                    >
+                      View Full Monthly Attendance Calendar →
+                    </button>
+                  </div>
+
+                  {/* Active Homework & LMS Updates */}
+                  <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="font-bold text-slate-900 flex items-center text-sm sm:text-base">
+                        <BookOpen className="w-4 h-4 mr-2 text-indigo-600" />
+                        Assigned Homework & Submissions
+                      </h4>
+                      <span className="text-xs text-slate-500 font-medium">Updated 25 Oct</span>
+                    </div>
+
+                    <div className="space-y-3">
+                      {currentChild.homeworkList.map((hw) => (
+                        <div key={hw.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <span className="font-bold text-slate-800 text-xs px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded">
+                                {hw.subject}
+                              </span>
+                              <h5 className="font-semibold text-slate-900 mt-1">{hw.title}</h5>
+                              <p className="text-slate-500 text-[11px] mt-0.5">Teacher: {hw.teacher} • Due: {hw.due}</p>
+                            </div>
+                            <span className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
+                              hw.status === 'Submitted' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                            }`}>
+                              {hw.status}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- TAB CONTENT: FEES & ONLINE PAYMENT (Razorpay Integrated) --- */}
+            {parentTab === 'fees' && (
+              <div className="space-y-6">
+                {/* Information Card */}
+                <div className="bg-gradient-to-r from-indigo-700 to-sky-700 rounded-2xl p-6 text-white shadow-md">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div>
+                      <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-white/20 text-white backdrop-blur-xs">
+                        Official CBSE Fee Ledger
+                      </span>
+                      <h3 className="text-xl sm:text-2xl font-bold mt-2">
+                        {currentChild.name} • {currentChild.grade}
+                      </h3>
+                      <p className="text-xs text-indigo-100 mt-1">
+                        Tuition, Digital Smart-Class, Science Lab & Sports Development Fees
+                      </p>
+                    </div>
+                    <div className="text-left sm:text-right">
+                      <p className="text-xs text-indigo-200 uppercase tracking-wider font-semibold">Total Annual Dues</p>
+                      <p className="text-2xl font-black">{formatINR(74000)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fee Installment Table */}
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                  <div className="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-sm sm:text-base">Quarterly Fee Schedule</h4>
+                      <p className="text-xs text-slate-500">Payments verified instantly via Razorpay Secure Gateway</p>
+                    </div>
+                    <span className="text-xs font-mono font-medium text-slate-500">PAN/GST: 24AABCS9821R1Z8</span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs sm:text-sm">
+                      <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                        <tr>
+                          <th className="px-6 py-3.5">Fee Term</th>
+                          <th className="px-6 py-3.5">Due Date</th>
+                          <th className="px-6 py-3.5">Total Amount</th>
+                          <th className="px-6 py-3.5">Status</th>
+                          <th className="px-6 py-3.5 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {currentChild.feeRecords.map((fee) => (
+                          <tr key={fee.id} className="hover:bg-slate-50/80 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="font-semibold text-slate-900">{fee.term}</div>
+                              <div className="text-xs text-slate-400 font-mono">{fee.id}</div>
+                            </td>
+                            <td className="px-6 py-4 text-slate-600 font-medium">
+                              {fee.dueDate}
+                            </td>
+                            <td className="px-6 py-4 font-bold text-slate-900">
+                              {formatINR(fee.total)}
+                            </td>
+                            <td className="px-6 py-4">
+                              {fee.status === 'PAID' ? (
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  <CheckCircle className="w-3.5 h-3.5 mr-1" /> {t.paidStatus}
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                  <Clock className="w-3.5 h-3.5 mr-1" /> {t.dueStatus}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              {fee.status === 'PAID' ? (
+                                <button
+                                  onClick={() => handleViewReceipt(fee)}
+                                  className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-800 transition border border-slate-300"
+                                >
+                                  <Download className="w-3.5 h-3.5 mr-1.5 text-slate-600" />
+                                  {t.downloadReceipt}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleInitiatePayment(fee)}
+                                  className="inline-flex items-center px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs transition"
+                                >
+                                  <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+                                  {t.payNow}
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- TAB CONTENT: ATTENDANCE CALENDAR --- */}
+            {parentTab === 'attendance' && (
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Attendance Registry - October 2026
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      Biometric & Classroom Attendance recorded daily at 08:30 AM IST
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-3 text-xs">
+                    <span className="flex items-center"><span className="w-3 h-3 rounded bg-emerald-500 mr-1.5"></span> Present</span>
+                    <span className="flex items-center"><span className="w-3 h-3 rounded bg-rose-500 mr-1.5"></span> Absent</span>
+                    <span className="flex items-center"><span className="w-3 h-3 rounded bg-slate-300 mr-1.5"></span> Sunday/Holiday</span>
+                  </div>
+                </div>
+
+                {/* 31-Day Simulated Calendar Grid */}
+                <div className="grid grid-cols-7 gap-2 text-center text-xs">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                    <div key={d} className="font-bold text-slate-400 py-1 uppercase">{d}</div>
+                  ))}
+                  {Array.from({ length: 31 }, (_, i) => {
+                    const day = i + 1;
+                    const isSunday = (day % 7 === 4); // arbitrary layout match
+                    const isAbsent = day === 22;
+                    const isFuture = day > 25;
+                    
+                    return (
+                      <div
+                        key={day}
+                        className={`p-2.5 rounded-xl border flex flex-col items-center justify-between min-h-[64px] transition ${
+                          isSunday
+                            ? 'bg-slate-100 border-slate-200 text-slate-400'
+                            : isFuture
+                            ? 'bg-white border-slate-100 text-slate-300'
+                            : isAbsent
+                            ? 'bg-rose-50 border-rose-200 text-rose-700 font-bold'
+                            : 'bg-emerald-50 border-emerald-200 text-emerald-800 font-bold'
+                        }`}
+                      >
+                        <span className="text-xs">{day}</span>
+                        <span className="text-[10px] font-medium">
+                          {isSunday ? 'Holiday' : isFuture ? '-' : isAbsent ? 'Absent' : 'Present'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* --- TAB CONTENT: ACADEMIC MARKS & REPORT CARD --- */}
+            {parentTab === 'academics' && (
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Mid-Term Progress Report (CBSE Format)
+                    </h3>
+                    <p className="text-xs text-slate-500">Evaluation: Theory (80 Marks) + Internal Assessment (20 Marks)</p>
+                  </div>
+                  <button
+                    onClick={() => window.print()}
+                    className="inline-flex items-center px-3.5 py-2 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition"
+                  >
+                    <Printer className="w-3.5 h-3.5 mr-1.5" /> Print Report Card
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs sm:text-sm">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-3">Subject</th>
+                        <th className="px-4 py-3">Written (80)</th>
+                        <th className="px-4 py-3">Internal (20)</th>
+                        <th className="px-4 py-3">Total (100)</th>
+                        <th className="px-4 py-3">Grade</th>
+                        <th className="px-4 py-3">Teacher Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {currentChild.academicMarks.map((sub, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 font-semibold text-slate-900">{sub.subject}</td>
+                          <td className="px-4 py-3 text-slate-700">{sub.midterm}</td>
+                          <td className="px-4 py-3 text-slate-700">{sub.practical}</td>
+                          <td className="px-4 py-3 font-bold text-indigo-700">{sub.midterm + sub.practical}</td>
+                          <td className="px-4 py-3">
+                            <span className="px-2 py-0.5 rounded text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                              {sub.grade}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-500 text-xs">{sub.remarks}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* --- TAB CONTENT: HOMEWORK & NOTICES --- */}
+            {parentTab === 'notices' && (
+              <div className="space-y-4">
+                {notices.map((n) => (
+                  <div key={n.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span className="font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-100">
+                        {n.category}
+                      </span>
+                      <span>{n.date}</span>
+                    </div>
+                    <h4 className="font-bold text-slate-900 text-base mt-2">{n.title}</h4>
+                    <p className="text-sm text-slate-600 mt-1 leading-relaxed">{n.summary}</p>
+                    <div className="mt-3 text-xs text-slate-400 font-medium">Issued by: {n.author}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* =========================================================================
+            PORTAL 2: TEACHER PORTAL
+            ========================================================================= */}
+        {activeRole === 'teacher' && (
+          <div className="space-y-6">
+            {/* Header info */}
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center space-x-3.5">
+                <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg">
+                  RV
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Mr. Rajesh Verma</h2>
+                  <p className="text-xs text-slate-500">
+                    Senior Mathematics Faculty • Class Teacher: <strong className="text-indigo-600">Grade 8-A</strong>
+                  </p>
+                </div>
+              </div>
+
+              {/* Class Selector & Sub-Tabs */}
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="flex items-center space-x-2 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                  {['attendance', 'marks', 'homework'].map((tab) => (
+                    <button
+                      key={tab}
+                      onClick={() => setTeacherTab(tab)}
+                      className={`px-3 py-1.5 rounded-lg capitalize transition-all ${
+                        teacherTab === tab ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      {tab}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Notification alert toast */}
+            {teacherFeedbackToast && (
+              <div className="p-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-semibold flex items-center justify-between shadow-xs">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <span>{teacherFeedbackToast}</span>
+                </div>
+              </div>
+            )}
+
+            {/* --- TEACHER SUB-VIEW: ATTENDANCE --- */}
+            {teacherTab === 'attendance' && (
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-5">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-base">
+                      Mark Daily Attendance for {teacherClass}
+                    </h3>
+                    <p className="text-xs text-slate-500">Changes reflect instantly on parent SMS/App notification engines</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="date"
+                      value={attendanceDate}
+                      onChange={(e) => setAttendanceDate(e.target.value)}
+                      className="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 text-slate-700 focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <button
+                      onClick={handleMarkAllPresent}
+                      className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300"
+                    >
+                      Mark All Present
+                    </button>
+                  </div>
+                </div>
+
+                {/* Student Attendance List */}
+                <div className="divide-y divide-slate-100">
+                  {classStudents.map((stu) => (
+                    <div key={stu.id} className="py-3 flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
+                          {stu.roll}
+                        </span>
+                        <div>
+                          <div className="font-semibold text-slate-900 text-sm">{stu.name}</div>
+                          <div className="text-[11px] text-slate-400 font-mono">Admission ID: {stu.id}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => toggleStudentAttendance(stu.id)}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${
+                            stu.present
+                              ? 'bg-emerald-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                          }`}
+                        >
+                          Present
+                        </button>
+                        <button
+                          onClick={() => toggleStudentAttendance(stu.id)}
+                          className={`px-4 py-1.5 rounded-lg text-xs font-bold transition ${
+                            !stu.present
+                              ? 'bg-rose-600 text-white shadow-xs'
+                              : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                          }`}
+                        >
+                          Absent
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <button
+                    onClick={handleSaveAttendance}
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-md transition"
+                  >
+                    Commit & Broadcast Attendance
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* --- TEACHER SUB-VIEW: MARKS ENTRY --- */}
+            {teacherTab === 'marks' && (
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-5">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+                  <div>
+                    <h3 className="font-bold text-slate-900">Term-End Mathematics Marks Entry</h3>
+                    <p className="text-xs text-slate-500">Grade 8-A • Maximum Marks: 100 (80 Written + 20 Internal)</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setTeacherFeedbackToast("Academic scores committed to student report cards.");
+                      setTimeout(() => setTeacherFeedbackToast(''), 3000);
+                    }}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-xs hover:bg-indigo-700"
+                  >
+                    {t.saveMarks}
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs sm:text-sm">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-3">Roll</th>
+                        <th className="px-4 py-3">Student Name</th>
+                        <th className="px-4 py-3">Mid-Term (80)</th>
+                        <th className="px-4 py-3">Practical / Viva (20)</th>
+                        <th className="px-4 py-3">Calculated Grade</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {classStudents.map((s, idx) => (
+                        <tr key={s.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 font-mono font-medium">{s.roll}</td>
+                          <td className="px-4 py-3 font-semibold text-slate-900">{s.name}</td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="number"
+                              defaultValue={s.mathMarks}
+                              className="w-20 px-2 py-1 border border-slate-300 rounded text-xs font-semibold focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </td>
+                          <td className="px-4 py-3">
+                            <input
+                              type="number"
+                              defaultValue={19}
+                              className="w-20 px-2 py-1 border border-slate-300 rounded text-xs font-semibold focus:ring-1 focus:ring-indigo-500"
+                            />
+                          </td>
+                          <td className="px-4 py-3 font-bold text-indigo-700">A1</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* --- TEACHER SUB-VIEW: HOMEWORK --- */}
+            {teacherTab === 'homework' && (
+              <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-4">
+                <h3 className="font-bold text-slate-900">Upload New Homework / Assignment</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Class & Section</label>
+                    <input
+                      type="text"
+                      disabled
+                      value="Grade 8-A (Mathematics)"
+                      className="w-full p-2 bg-slate-100 border border-slate-300 rounded-lg text-slate-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">Submission Deadline</label>
+                    <input
+                      type="date"
+                      defaultValue="2026-10-30"
+                      className="w-full p-2 border border-slate-300 rounded-lg text-slate-700"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-slate-700 mb-1">Homework Topic / Chapter</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Chapter 11 - Mensuration Exercise 11.2 (Q1 to Q8)"
+                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-700"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block font-semibold text-slate-700 mb-1">Instructions for Students</label>
+                    <textarea
+                      rows={3}
+                      placeholder="Solve with neat diagrams in your geometry notebook..."
+                      className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-700"
+                    />
+                  </div>
+                </div>
+                <button
+                  onClick={() => {
+                    setTeacherFeedbackToast("Homework published to Grade 8-A student dashboards.");
+                    setTimeout(() => setTeacherFeedbackToast(''), 3000);
+                  }}
+                  className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                >
+                  Publish Homework
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* =========================================================================
+            PORTAL 3: ADMIN & PRINCIPAL DASHBOARD
+            ========================================================================= */}
+        {activeRole === 'admin' && (
+          <div className="space-y-6">
+            {/* Admin Stats Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.totalStudents}</span>
+                  <div className="p-2 rounded-lg bg-indigo-50 text-indigo-600"><Users className="w-5 h-5" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mt-2">1,428</h3>
+                <p className="text-xs text-emerald-600 font-semibold mt-1">98.4% Registered with Aadhaar</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.staffCount}</span>
+                  <div className="p-2 rounded-lg bg-sky-50 text-sky-600"><GraduationCap className="w-5 h-5" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-slate-900 mt-2">84 Faculty</h3>
+                <p className="text-xs text-slate-500 mt-1">79 Present Today</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.todayCollection}</span>
+                  <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600"><DollarSign className="w-5 h-5" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-emerald-600 mt-2">{formatINR(342500)}</h3>
+                <p className="text-xs text-slate-500 mt-1">Via Razorpay Gateway & POS</p>
+              </div>
+
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t.pendingDues}</span>
+                  <div className="p-2 rounded-lg bg-rose-50 text-rose-600"><AlertTriangle className="w-5 h-5" /></div>
+                </div>
+                <h3 className="text-2xl font-black text-rose-600 mt-2">{formatINR(1284000)}</h3>
+                <p className="text-xs text-rose-600 font-semibold mt-1">Q3 Outstanding Balance</p>
+              </div>
+            </div>
+
+            {/* Admin Tabs */}
+            <div className="flex items-center space-x-2 border-b border-slate-200 pb-3">
+              {[
+                { id: 'overview', label: 'Financials & Defaulters' },
+                { id: 'notices', label: t.announcements },
+                { id: 'logs', label: t.auditLogs }
+              ].map((tb) => (
+                <button
+                  key={tb.id}
+                  onClick={() => setAdminTab(tb.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-bold transition ${
+                    adminTab === tb.id
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                  }`}
+                >
+                  {tb.label}
+                </button>
+              ))}
+            </div>
+
+            {/* SUB-VIEW: FINANCIALS & DEFAULTERS */}
+            {adminTab === 'overview' && (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                  <div>
+                    <h4 className="font-bold text-slate-900">Term 3 Fee Defaulters & Pending Balances</h4>
+                    <p className="text-xs text-slate-500">Automated SMS Reminders triggered every 3 days past due date</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      alert("Simulated: SMS reminders dispatched to 14 registered parents.");
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200"
+                  >
+                    Send Bulk Fee Reminder SMS
+                  </button>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs sm:text-sm">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-6 py-3">Student</th>
+                        <th className="px-6 py-3">Class</th>
+                        <th className="px-6 py-3">Parent Name</th>
+                        <th className="px-6 py-3">Contact</th>
+                        <th className="px-6 py-3">Outstanding</th>
+                        <th className="px-6 py-3">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr className="hover:bg-slate-50">
+                        <td className="px-6 py-3.5 font-bold text-slate-900">Aarav Sharma</td>
+                        <td className="px-6 py-3.5">Grade 8-A</td>
+                        <td className="px-6 py-3.5 text-slate-600">Mr. Ramesh Sharma</td>
+                        <td className="px-6 py-3.5 font-mono text-xs">+91 98250 12345</td>
+                        <td className="px-6 py-3.5 font-bold text-rose-600">{formatINR(18500)}</td>
+                        <td className="px-6 py-3.5">
+                          <button className="text-xs text-indigo-600 hover:underline font-semibold">
+                            Generate Notice
+                          </button>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50">
+                        <td className="px-6 py-3.5 font-bold text-slate-900">Bhavin Jadeja</td>
+                        <td className="px-6 py-3.5">Grade 8-A</td>
+                        <td className="px-6 py-3.5 text-slate-600">Mr. Dilip Jadeja</td>
+                        <td className="px-6 py-3.5 font-mono text-xs">+91 94262 77811</td>
+                        <td className="px-6 py-3.5 font-bold text-rose-600">{formatINR(18500)}</td>
+                        <td className="px-6 py-3.5">
+                          <button className="text-xs text-indigo-600 hover:underline font-semibold">
+                            Generate Notice
+                          </button>
+                        </td>
+                      </tr>
+                      <tr className="hover:bg-slate-50">
+                        <td className="px-6 py-3.5 font-bold text-slate-900">Kavya Vaghela</td>
+                        <td className="px-6 py-3.5">Grade 10-B</td>
+                        <td className="px-6 py-3.5 text-slate-600">Dr. N. K. Vaghela</td>
+                        <td className="px-6 py-3.5 font-mono text-xs">+91 97129 44321</td>
+                        <td className="px-6 py-3.5 font-bold text-rose-600">{formatINR(24000)}</td>
+                        <td className="px-6 py-3.5">
+                          <button className="text-xs text-indigo-600 hover:underline font-semibold">
+                            Generate Notice
+                          </button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* SUB-VIEW: PUBLISH NOTICES */}
+            {adminTab === 'notices' && (
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+                  <h4 className="font-bold text-slate-900 mb-3 text-sm">Publish New Announcement</h4>
+                  <form onSubmit={handleAddNotice} className="space-y-3 text-xs">
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">Circular Title</label>
+                      <input
+                        type="text"
+                        required
+                        value={newNoticeTitle}
+                        onChange={(e) => setNewNoticeTitle(e.target.value)}
+                        placeholder="e.g. Sports Day Selection Trials"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-semibold text-slate-700 mb-1">Details & Instructions</label>
+                      <textarea
+                        rows={4}
+                        required
+                        value={newNoticeBody}
+                        onChange={(e) => setNewNoticeBody(e.target.value)}
+                        placeholder="Provide date, timing, dress code..."
+                        className="w-full p-2.5 border border-slate-300 rounded-lg text-slate-800 focus:ring-1 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-xs transition"
+                    >
+                      Broadcast to All Parents & Staff
+                    </button>
+                  </form>
+                </div>
+
+                <div className="lg:col-span-2 space-y-3">
+                  <h4 className="font-bold text-slate-900 text-sm">Active School Circulars ({notices.length})</h4>
+                  {notices.map((n) => (
+                    <div key={n.id} className="p-4 bg-white rounded-xl border border-slate-200 text-xs">
+                      <div className="flex justify-between items-center text-slate-400">
+                        <span className="font-semibold text-indigo-600">{n.category}</span>
+                        <span>{n.date}</span>
+                      </div>
+                      <h5 className="font-bold text-slate-900 text-sm mt-1">{n.title}</h5>
+                      <p className="text-slate-600 mt-1">{n.summary}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SUB-VIEW: AUDIT & SECURITY LOGS (Security Spec Met) */}
+            {adminTab === 'logs' && (
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-200">
+                  <h4 className="font-bold text-slate-900 text-sm">Immutable Security & Access Logs</h4>
+                  <p className="text-xs text-slate-500">Records of teacher marks entry, fee reconciliation, and parent portal logins</p>
+                </div>
+                <div className="divide-y divide-slate-100 text-xs font-mono">
+                  {AUDIT_LOGS.map((log) => (
+                    <div key={log.id} className="px-6 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1 hover:bg-slate-50">
+                      <div>
+                        <span className="font-bold text-indigo-700">[{log.id}]</span>{' '}
+                        <span className="text-slate-800 font-semibold">{log.user}:</span>{' '}
+                        <span className="text-slate-600 font-sans">{log.action}</span>
+                      </div>
+                      <div className="text-slate-400 text-[11px] flex items-center space-x-3">
+                        <span>IP: {log.ip}</span>
+                        <span>•</span>
+                        <span>{log.timestamp}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* =========================================================================
+          MODAL 1: RAZORPAY TEST GATEWAY MODAL (Working Payment Flow Simulation)
+          ========================================================================= */}
+      {paymentModalOpen && selectedFeeItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            {/* Razorpay Brand Header */}
+            <div className="bg-[#0c2340] p-4 text-white flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-8 h-8 rounded-lg bg-sky-500 flex items-center justify-center font-bold text-xs tracking-wider">
+                  RZP
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm tracking-tight">Razorpay Secure Checkout</h3>
+                  <p className="text-[10px] text-sky-200">Delhi Public Global School • Merchant</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPaymentModalOpen(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6">
+              {!paymentSuccessData ? (
+                <div className="space-y-5">
+                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div className="flex justify-between items-center text-xs text-slate-500">
+                      <span>Fee Component</span>
+                      <span className="font-mono">{selectedFeeItem.id}</span>
+                    </div>
+                    <div className="text-sm font-bold text-slate-900 mt-1">{selectedFeeItem.term}</div>
+                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-200">
+                      <span className="text-xs font-semibold text-slate-600">Amount Payable:</span>
+                      <span className="text-lg font-black text-indigo-700">{formatINR(selectedFeeItem.total)}</span>
+                    </div>
+                  </div>
+
+                  {/* Payment Methods Simulation */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-wider">Choose Indian Payment Method</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-3 border-2 border-indigo-600 bg-indigo-50/50 rounded-xl font-semibold text-indigo-900 flex items-center justify-center cursor-pointer">
+                        UPI (GPay / PhonePe / Paytm)
+                      </div>
+                      <div className="p-3 border border-slate-200 rounded-xl font-semibold text-slate-600 flex items-center justify-center cursor-pointer hover:bg-slate-50">
+                        Net Banking (SBI / HDFC / ICICI)
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-[11px] text-amber-800">
+                    <strong>Razorpay Sandbox Mode:</strong> Clicking below simulates server-side HMAC-SHA256 signature verification and updates fee status permanently.
+                  </div>
+
+                  <button
+                    disabled={paymentProcessing}
+                    onClick={handleSimulatePaymentCompletion}
+                    className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center space-x-2 text-sm disabled:opacity-50"
+                  >
+                    {paymentProcessing ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                        <span>Verifying HMAC with Gateway...</span>
+                      </>
+                    ) : (
+                      <span>Pay {formatINR(selectedFeeItem.total)} Now</span>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                /* Payment Success View */
+                <div className="text-center py-4 space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
+                    <CheckCircle className="w-10 h-10" />
+                  </div>
+                  <h4 className="text-xl font-bold text-slate-900">Payment Verified & Settled</h4>
+                  <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                    Transaction ID <code className="font-mono text-indigo-600 font-bold">{paymentSuccessData.paymentId}</code> verified by school billing node.
+                  </p>
+
+                  <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-left text-xs space-y-1.5 font-mono">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Receipt No:</span>
+                      <span className="font-bold text-slate-800">{paymentSuccessData.receiptId}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Student:</span>
+                      <span className="font-bold text-slate-800">{paymentSuccessData.childName}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Amount:</span>
+                      <span className="font-bold text-emerald-600">{formatINR(paymentSuccessData.amount)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex space-x-3 pt-2">
+                    <button
+                      onClick={() => {
+                        setPaymentModalOpen(false);
+                        handleViewReceipt({
+                          receiptId: paymentSuccessData.receiptId,
+                          term: paymentSuccessData.term,
+                          total: paymentSuccessData.amount,
+                          paid: paymentSuccessData.amount,
+                          paidAt: paymentSuccessData.date
+                        });
+                      }}
+                      className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition shadow-xs"
+                    >
+                      View & Print Receipt
+                    </button>
+                    <button
+                      onClick={() => setPaymentModalOpen(false)}
+                      className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold"
+                    >
+                      Done
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL 2: PRINTABLE GST FEE RECEIPT (CBSE STANDARD FORMAT)
+          ========================================================================= */}
+      {receiptModalOpen && activeReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-8 shadow-2xl border border-slate-300 relative my-8">
+            <button
+              onClick={() => setReceiptModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 font-bold"
+            >
+              ✕
+            </button>
+
+            {/* School Letterhead */}
+            <div className="text-center border-b-2 border-slate-900 pb-4">
+              <h2 className="text-xl font-black tracking-tight text-slate-900 uppercase">
+                DELHI PUBLIC GLOBAL SCHOOL, JAMNAGAR
+              </h2>
+              <p className="text-xs text-slate-600 font-medium">
+                Affiliated to CBSE, New Delhi • Affiliation No: 1030492 • School Code: 50412
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Aerodrome Road, Jamnagar, Gujarat - 361006 • Tel: +91 288 2710900
+              </p>
+              <div className="mt-2 inline-block px-3 py-0.5 rounded-full bg-slate-900 text-white text-[11px] font-bold uppercase tracking-wider">
+                FEE PAYMENT RECEIPT (OFFICIAL COPY)
+              </div>
+            </div>
+
+            {/* Receipt Meta */}
+            <div className="grid grid-cols-2 gap-4 text-xs py-4 border-b border-slate-200">
+              <div>
+                <p><span className="text-slate-500 font-medium">Receipt No:</span> <strong className="font-mono text-slate-800">{activeReceipt.receiptNumber}</strong></p>
+                <p className="mt-1"><span className="text-slate-500 font-medium">Student Name:</span> <strong className="text-slate-800">{activeReceipt.studentName}</strong></p>
+                <p className="mt-1"><span className="text-slate-500 font-medium">Class / Section:</span> <strong>{activeReceipt.grade}</strong> (Roll: {activeReceipt.rollNo})</p>
+                <p className="mt-1"><span className="text-slate-500 font-medium">Admission ID:</span> <span className="font-mono">{activeReceipt.studentId}</span></p>
+              </div>
+              <div className="text-right">
+                <p><span className="text-slate-500 font-medium">Date:</span> <strong>{activeReceipt.date}</strong></p>
+                <p className="mt-1"><span className="text-slate-500 font-medium">Payment Mode:</span> <strong>{activeReceipt.mode}</strong></p>
+                <p className="mt-1"><span className="text-slate-500 font-medium">Txn Ref:</span> <span className="font-mono text-[10px]">{activeReceipt.transactionRef}</span></p>
+                <p className="mt-1"><span className="text-slate-500 font-medium">Term:</span> <strong>{activeReceipt.term}</strong></p>
+              </div>
+            </div>
+
+            {/* Breakdown Table */}
+            <div className="py-4">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-300 font-bold text-slate-700">
+                    <th className="py-2">Description</th>
+                    <th className="py-2 text-right">Amount (INR)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="py-2 text-slate-800">Tuition Fee (Quarterly)</td>
+                    <td className="py-2 text-right font-medium">{formatINR(12000)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-slate-800">Digital Classroom & ICT Development</td>
+                    <td className="py-2 text-right font-medium">{formatINR(2500)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-slate-800">Composite Science & Mathematics Lab Fee</td>
+                    <td className="py-2 text-right font-medium">{formatINR(2000)}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 text-slate-800">Sports & Co-curricular Activities Fund</td>
+                    <td className="py-2 text-right font-medium">{formatINR(2000)}</td>
+                  </tr>
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-slate-900 font-black text-slate-900 text-sm">
+                    <td className="py-2.5">Total Amount Paid</td>
+                    <td className="py-2.5 text-right text-indigo-700">{formatINR(activeReceipt.amountPaid)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            {/* Official Stamp & Sign */}
+            <div className="pt-8 flex justify-between items-end text-xs text-slate-500 border-t border-slate-200">
+              <div>
+                <p className="text-[10px] text-slate-400">Computer Generated Receipt.</p>
+                <p className="text-[10px] text-slate-400">Signature not required for online authentications.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-24 h-8 border-b border-slate-400 mx-auto mb-1"></div>
+                <p className="font-semibold text-slate-700">Accounts Officer</p>
+                <p className="text-[10px]">DPGS Jamnagar</p>
+              </div>
+            </div>
+
+            {/* Print Action Bar */}
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => window.print()}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold flex items-center shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5 mr-1.5" /> Print Receipt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- FOOTER --- */}
+      <footer className="bg-white border-t border-slate-200 py-6 text-xs text-slate-500 mt-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© 2026 Delhi Public Global School. Certified under CBSE Affiliation Bye-Laws.</p>
+          <div className="flex items-center space-x-4">
+            <span className="flex items-center text-emerald-600 font-medium">
+              <Shield className="w-3.5 h-3.5 mr-1" /> 256-bit SSL Banking Protection
+            </span>
+            <span>•</span>
+            <span>Jamnagar, Gujarat</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
